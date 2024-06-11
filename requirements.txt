@@ -1,0 +1,4 @@
+Flask==2.1.2
+Flask_Cors==3.0.10
+launchdarkly_server_sdk==9.1.0
+splitio_client==9.6.2
