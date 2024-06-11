@@ -5,8 +5,7 @@ from flask import render_template
 from flask import make_response
 from flask_cors import CORS
 
-import ldclient
-from ldclient.config import Config
+from splitio import get_factory
 
 
 app = Flask(__name__)
@@ -14,49 +13,36 @@ CORS(app)
 
 
 # Handle flag changes
-class change_tracker:
-    def __call__(self, changed):
-        print(
-            "Old value: "
-            + str(changed.old_value)
-            + ", New value: "
-            + str(changed.new_value)
-        )
+#
+# !!! No SDK functionality to handle flag changes
+#
 
 
 # Setup and instantiate SDK
-ldclient.set_config(Config(os.environ["LD_SDK_KEY"]))
+factory = get_factory(
+    os.environ["SPLIT_API_KEY"], config={"impressionsMode": "optimized"}
+)
+factory.block_until_ready(5)
+split = factory.client()
 
-if ldclient.get().is_initialized():
-    print("SDK successfully initialized!")
-else:
-    print("SDK failed to initialize")
-
-
-def exitapp():
-    ldclient.get().close()
-
-
-atexit.register(exitapp)
 
 # Create data set to identity customer and targets
-mycontext = ldclient.Context.from_dict(
-    {
-        "key": "018e7bd4-ab96-782e-87b0-b1e32082b481",
-        "kind": "device",
-        "name": "Linux",
-    }
-)
+attributes = dict()
+attributes["kind"] = "device"
+attributes["name"] = "Linux"
+attributes["allocated"] = True
 
 # Listen for flag changes
-ldclient.get().flag_tracker.add_flag_value_change_listener(
-    "test-flag", mycontext, change_tracker()
-)
+#
+# !!! No SDK functionality to listen for flag changes
+#
 
 
 # Get flag value
-flag_value = ldclient.get().variation("test-flag", mycontext, False)
-print("The initial value is: " + str(flag_value))
+treatment = split.get_treatment(
+    "018ef239-957b-744a-b50b-c83bde2699cc", "Test_Flag", attributes
+)
+print("The initial value is: " + str(treatment))
 
 
 # Setup web service
